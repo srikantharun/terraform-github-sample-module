@@ -1,1 +1,1 @@
-# terraform-google-sample-module
+# terraform-sample-module
