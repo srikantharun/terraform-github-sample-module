@@ -32,15 +32,17 @@ jobs:
          --request POST \
          --data @module.json \
         https://app.terraform.io/api/v2/organizations/$TF_ORGANIZATION/registry-modules 
-
-jobs:
-  Release:
-    name: Release
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - uses: ncipollo/release-action@v1
-        with:
-          generateReleaseNotes: true
-          name: 'v${{ github.ref_name }}'
-          token: ${{ secrets.GITHUB_TOKEN }}
+        
+        export push_url=$(curl -s \
+         —- header “Authorization: Bearer $$TERRAFORM_CLOUD_TOKEN” \
+         —- header “Content-Type: application/vnd.api+json” \
+         —- request POST \
+         —- data @version.json \
+        https://app.terraform.io/api/v2/organizations/$TF_ORGANIZATION/registry-modules/private/$TF_ORGANIZATION/demo-module-bucket/google/versions | jq -r ‘.data.links.upload’)
+   
+        tar cvfz demo_module_bucket.tar.gz  ${{ github.workspace }}/*
+        
+        curl \                                                                                                                                    --header "Content-Type: application/octet-stream" \
+          --request PUT \
+          --data-binary @demo_module_bucket.tar.gz \
+         ${push_url}
