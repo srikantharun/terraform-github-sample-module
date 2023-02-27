@@ -78,3 +78,24 @@ jobs:
 
       - name: Perform Unit Test
         run: go test -timeout 30m -p 1
+
+      - name: Bump version and push tag
+        uses: mathieudutour/github-tag-action@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
+  tf-documentation:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          
+      - name: Render terraform docs and push changes back to PR
+        uses: terraform-docs/gh-actions@main
+        with:
+          working-dir: .
+          output-file: README.md
+          output-method: inject
+          git-push: "true"
+      - uses: pre-commit/action@v3.0.0
